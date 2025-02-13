@@ -3,10 +3,11 @@ import './App.css';
 
 const App: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isMusicOn, setIsMusicOn] = useState<boolean>(true);
+  const [isMusicOn, setIsMusicOn] = useState<boolean>(false); // Start with music off
+  const [isFirstInteraction, setIsFirstInteraction] = useState<boolean>(true); // Track first interaction
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [frames] = useState<string[]>(["kana-frame.png", "tana-frame.png", "pia-frame.png"]);
+  const [frames] = useState<string[]>(["kana-frame.png", "tana-frame.png", "pia-frame.png", "pia-ktp-frame.png"]);
   const [selectedFrame, setSelectedFrame] = useState<string>("kana-frame.png");
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
@@ -14,6 +15,30 @@ const App: React.FC = () => {
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<string | null>(null);
   const [isPortrait, setIsPortrait] = useState<boolean>(false);
+
+  // Handle first user interaction to start music
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      if (isFirstInteraction && audioRef.current) {
+        audioRef.current.play()
+          .then(() => {
+            setIsMusicOn(true); // Turn music on after first interaction
+            setIsFirstInteraction(false); // Mark first interaction as done
+          })
+          .catch((error) => {
+            console.error("Failed to play audio:", error);
+          });
+      }
+    };
+
+    // Add event listener for first interaction
+    window.addEventListener("click", handleFirstInteraction);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("click", handleFirstInteraction);
+    };
+  }, [isFirstInteraction]);
 
 
   // Detect screen orientation for mobile
@@ -28,10 +53,10 @@ const App: React.FC = () => {
     return () => window.removeEventListener("resize", checkOrientation);
   }, []);
 
-  // Background Music
+  // Background Music Control
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = 0.05; // Set volume to 35%
+      audioRef.current.volume = 0.05; // Set volume to 5%
       if (isMusicOn) {
         audioRef.current.play();
       } else {
@@ -60,6 +85,7 @@ const App: React.FC = () => {
 
   // Start the camera stream
   useEffect(() => {
+    const videoElement = videoRef.current;
     const checkAndStartCamera = async () => {
       try {
         // Check camera permission
@@ -103,8 +129,8 @@ const App: React.FC = () => {
     checkAndStartCamera();
   
     return () => {
-      if (videoRef.current?.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+      if (videoElement?.srcObject) {
+        const tracks = (videoElement.srcObject as MediaStream).getTracks();
         tracks.forEach(track => track.stop());
       }
     };
@@ -179,17 +205,20 @@ const App: React.FC = () => {
 
       {/* Music Control */}
       <div>
-      <div className="fixed bottom-4 right-4 z-50">
-        <button
-          onClick={() => setIsMusicOn(!isMusicOn)}
-          className="bg-[#ff9fb7] text-[#bb1f1d] px-4 py-2 rounded"
+        <div className="fixed bottom-4 right-4 z-50">
+          <button
+            onClick={() => setIsMusicOn(!isMusicOn)}
+            className="bg-[#ff9fb7] text-[#bb1f1d] px-4 py-2 rounded"
           >
             {isMusicOn ? "Mute Music" : "Play Music"}
-        </button>
-      </div>
+          </button>
+        </div>
 
-      {/* Audio Element */}
-        <audio ref={audioRef} src="hagavi_jkt48v.mp3" loop autoPlay />
+        {/* Audio Element */}
+        <audio ref={audioRef} loop>
+          <source src="Dreamcatcher.mp3" type="audio/mp3" />
+          <source src="hagavi_jkt48v.mp3" type="audio/mp3" />
+        </audio>
       </div>
 
       {/* Logos */}
