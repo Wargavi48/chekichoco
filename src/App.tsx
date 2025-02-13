@@ -7,7 +7,7 @@ const App: React.FC = () => {
   const [isFirstInteraction, setIsFirstInteraction] = useState<boolean>(true); // Track first interaction
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [frames] = useState<string[]>(["kana-frame.png", "kana-ktp-frame.png", "tana-frame.png", "pia-frame.png", "pia-ktp-frame.png"]);
+  const [frames] = useState<string[]>(["kana-frame.png", "kana-ktp-frame.png", "tana-frame.png", "tana-ktp-frame.png", "pia-frame.png", "pia-ktp-frame.png"]);
   const [selectedFrame, setSelectedFrame] = useState<string>("kana-frame.png");
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
